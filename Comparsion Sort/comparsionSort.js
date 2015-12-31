@@ -316,14 +316,62 @@ console.log("Quick Sort 2", testCorrect(tmpArr), tmpArr, count);
 
 
 
+/*************** Heap Sort ******************
+recursively build a max heap, then swap the root of the heap with the last element of the array
+both the best/average/wrost case is O(nlogn), memory space 1, not stable;
+*/
 
+initialArr();
 
+function heapSort(arr){
+	buildMaxHeap(arr);
 
+	for(var i = arrLen - 1; i > 0; i--){
+		swap(arr, 0, i);
+		maxHeapify(arr, 0, i);
+	}
 
+	return arr;
+};
 
+function swap(arr, firstIndex, secondIndex){
+	var temp = arr[firstIndex];
+	arr[firstIndex] = arr[secondIndex];
+	arr[secondIndex] = temp;
+};
 
+function buildMaxHeap(arr){
+	var iParent = Math.floor(arrLen / 2) - 1;
 
+	for(var i = iParent; i>=0; i--){
+		maxHeapify(arr, i, arrLen);
+	}
+};
 
+function maxHeapify(arr, index, heapSize){
+	count ++;
+
+	var iMax, iLeft, iRight;
+	iMax = index;
+	iLeft = index*2 +1;
+	iRight = index*2 +2;
+
+	if(iLeft < heapSize && arr[iMax] < arr[iLeft]){
+		iMax = iLeft;
+	}
+
+	if(iRight < heapSize && arr[iMax] < arr[iRight]){
+		iMax = iRight;
+	}
+
+	if(iMax != index){
+		swap(arr, iMax, index);
+		maxHeapify(arr, iMax, heapSize);
+	}
+};
+
+tmpArr = heapSort(tmpArr);
+console.log("Heap Sort", testCorrect(tmpArr), tmpArr, count);
 
 
 
