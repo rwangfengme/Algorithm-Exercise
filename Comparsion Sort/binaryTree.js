@@ -1,22 +1,34 @@
 /*************** Binary Search Tree ******************
 reference: http://wuzhiwei.net/ds_app_bst/
 		   http://khan4019.github.io/front-end-Interview-Questions/bst.html
+
+If a function name has a _R suffix, it's recursion. Or it implement by iteration.
+
+TODO: checkBalanced
 */
 function BinarySearchTree(){
 	this.root = null;
-	this.height = 0;
+	this.size = 0;
 }
 
 function BstNode(key, value, parent){
 	this.key = key;
+	// store elements which has same key but different values
+	// useful when sorting an array which has duplicate elements
+	// can be ignored if you just want a simple BST
 	this.valueList = [value];
 	this.parent = parent || null;
 	this.left = null;
 	this.right = null;
+	this.depth = parent? parent.depth + 1 : 1;
 };
 
-BinarySearchTree.prototype._find = function(key){
-	var node = this.root;
+BinarySearchTree.prototype._find = function(key, node){
+	var node = node || this.root;
+	if(!(node instanceof BstNode)){
+		throw "invalid node";
+	};
+
 	while(node){
 		if(node.key == key){
 			return node;
@@ -33,12 +45,35 @@ BinarySearchTree.prototype._find = function(key){
 	return node;
 };
 
+BinarySearchTree.prototype._find_R = function(key, node){
+	var node = node || this.root;
+	if(!(node instanceof BstNode)){
+		throw "invalid node";
+	};
+
+	if(node){
+		if(node.key == key){
+			return node;
+		}else if(node.key > key){
+			return this._find_R(key, node.left);
+		}else{
+			return this._find_R(key, node.right);
+		}
+	}
+};
+
 BinarySearchTree.prototype._findMin = function(root){
 	while(root && root.left){
 		root = root.left;
 	}
 
 	return root;
+};
+
+BinarySearchTree.prototype._findMin_R = function(root){
+	if(root && root.left){
+		return this._findMin_R(root.left);
+	}
 };
 
 BinarySearchTree.prototype._findMax = function(root){
@@ -49,9 +84,17 @@ BinarySearchTree.prototype._findMax = function(root){
 	return root;
 };
 
+BinarySearchTree.prototype._findMax_R = function(root){
+	if(root && root.right){
+		return this._findMax_R(root.right);
+	}
+};
+
 BinarySearchTree.prototype._add = function(key, value){
 	if(this.root == null){
 		this.root = new BstNode(key, value);
+		this.root.depth = 1;
+		this.size ++ ;
 		return;
 	};
 
@@ -63,6 +106,7 @@ BinarySearchTree.prototype._add = function(key, value){
 				node = node.left;
 			}else{
 				node.left = new BstNode(key, value, node);
+				this.size ++;
 				return;
 			}
 		}else if(key > node.key){
@@ -70,6 +114,7 @@ BinarySearchTree.prototype._add = function(key, value){
 				node = node.right;
 			}else{
 				node.right = new BstNode(key, value, node);
+				this.size ++;
 				return;
 			}
 		}else{
@@ -78,6 +123,31 @@ BinarySearchTree.prototype._add = function(key, value){
 		}
 	}
 };
+
+BinarySearchTree.prototype._add_R = function(key, value, node){
+	if(this.root == null){
+		this.root = new BstNode(key, value);
+		this.root.depth = 1;
+		this.size ++ ;
+
+		return;
+	}
+
+	if(node.key < key){
+		node.left == null ? 
+			node.left = new BstNode(key, value, node) :
+			this._add_R(key, value, node.left);
+	}else if(node.key > key){
+		node.right == null ?
+			node.right = new BstNode(key, value, node) :
+			this._add_R(key, value, node.right);
+	}else{
+		node.valueList.push(value);
+		return;
+	}
+
+}
+
 
 BinarySearchTree.prototype._remove = function(key, value, node){
 	var node = node || this._find(key);
@@ -103,16 +173,22 @@ BinarySearchTree.prototype._remove = function(key, value, node){
 		this._remove(key, value, rightMin);
 	}else if(!node.left && !node.right){
 		(node == node.parent.left)? node.parent.left = null : node.parent.right = null;
+		this.size --;
 		return ;
 	}else{
 		node.left ? node.parent.left = node.left : node.parent.right = node.right;
+		this.size --;
 		return;
 	}
 };
 
 // The order is Left / Node / Right
-BinarySearchTree.prototype._inorderTraversal = function(func){
-	var node = this.root;
+BinarySearchTree.prototype._inorderTraversal = function(func, node){
+	var node = node || this.root;
+	if(!(node instanceof BstNode)){
+		throw "invalid node";
+	};
+
 	var stack = [];
 
 
@@ -136,9 +212,26 @@ BinarySearchTree.prototype._inorderTraversal = function(func){
 	return orderedArr;
 };
 
+BinarySearchTree.prototype._inorderTraversal_R = function(func, node){
+	var node = node || this.root;
+	if(!(node instanceof BstNode)){
+		throw "invalid node";
+	};
+
+	if(node){
+		this._inorderTraversal_R(func, node.left);
+		func(node);
+		this._inorderTraversal_R(func, node.right);
+	}
+};
+
 // The order is Node / Left / Right
-BinarySearchTree.prototype._preorderTraversal = function(func){
-	var node = this.root;
+BinarySearchTree.prototype._preorderTraversal = function(func, node){
+	var node = node || this.root;
+	if(!(node instanceof BstNode)){
+		throw "invalid node";
+	};
+
 	var stack = [];
 
 	while(node){
@@ -162,117 +255,63 @@ BinarySearchTree.prototype._preorderTraversal = function(func){
 	}
 };
 
+// The order is Left / Right / Node
+BinarySearchTree.prototype._postorderTraversal = function(func, node){
+	var node = node || this.root;
+	if(!(node instanceof BstNode)){
+		throw "invalid node";
+	};
 
-/**************** Preparations *******************/
-var arr = [], arrLen, count, tmpArr;
-generateNums(1000, 10000, arr);
+	var stack = [];
 
-function generateNums(nums, scope, arr){
-	for(var i = 0; i < nums; i++){
-		var temp = Math.floor(Math.random()*scope);
-		arr.push(temp);
-	}
-};
+	while(node){
+		if(node.left){
+			stack.push({"node" : node, visited : false});
+			node = node.left;
+		}else{
+			var visitedNode;
+			while(!node.right){
+				func(node);
 
-function initialArr(){
-	tmpArr = arr.slice();
-	count = 0;
-	arrLen = tmpArr.length;
-};
+				visitedNode = stack.pop();
+				node = visitedNode.node;
 
-function testCorrect(arr){
-	for(var i = 0; i < arrLen-1; i++){
-		if(arr[i]>arr[i+1]){
-			return false;
+				if(!node){
+					return;
+				}
+			}
+
+			while(visitedNode){
+				if(visitedNode.visited == false){
+					stack.push({"node":visitedNode.node, visited : true});
+					node = node.right;
+					visitedNode = null;
+				}else{
+					func(visitedNode.node);
+					if(stack.length > 0){
+						visitedNode = stack.pop();
+						node = visitedNode.node;
+					}else{
+						visitedNode = null;
+						return ;
+					}
+				};
+			}
+
+			
 		}
+
 	}
-	return true;
 };
 
-
-/****************** sorting test **********************
- By using Binary Search Tree, we can easily get an sorted arr from the input.
-just built a BST and then do inorder travel, here's an example
-*/
-initialArr();
-
-var BST = new BinarySearchTree();
-for(var i = 0; i<arrLen; i++){
-	BST._add(arr[i], i);
-}
-
-function outputSortedArr(BST){
-	var orderedElements = [];
-	BST._inorderTraversal(function(node){
-		orderedElements.push(node);
+//can simply done by traverse the whole tree
+BinarySearchTree.prototype._getDepth = function(){
+	var depth = 0;
+	this._inorderTraversal(function(node){
+		if(node.depth > depth){
+			depth = node.depth;
+		}
 	});
-	var sortedArr = [];
 
-	for(var j = 0; j < orderedElements.length; j++){
-		for(var k = 0; k<orderedElements[j].valueList.length; k++){
-			sortedArr.push(orderedElements[j].key);
-		}
-	}
-
-	return sortedArr;
-}
-
-var result = outputSortedArr(BST);
-console.log("BinarySearchTree Sort", testCorrect(result), result);
-
-
-
-/****************** preorder traversal test *************
-*/
-var preorderArr = [40, 25, 78, 10, 32, 7, 31, 35];
-var preorderBST = new BinarySearchTree();
-
-for(var i = 0; i<preorderArr.length; i++){
-	preorderBST._add(preorderArr[i], i);
-}
-
-var preorderElements = [];
-preorderBST._preorderTraversal(function(node){
-	preorderElements.push(node);
-});
-
-console.log(preorderElements);
-
-
-
-/****************** remove test **********************
-_remove(key, value, node)
-we only use two parameters
-*/
-
-var toRemove = 11;
-//because this BST accept the same key, their difference(value) stored in BstNode.valueList
-//So when we try to remove a key with specific value, we should provide the value, or it'll
-//del the first value in the valueList
-var toRemoveValue; 
-
-var testBST = new BinarySearchTree();
-var testArr = [15,11,17,8,12,16,18,7,10,13,9,8];
-for(var i = 0; i<testArr.length; i++){
-	testBST._add(testArr[i], i);
-}
-
-testBST._remove(toRemove, toRemoveValue);
-
-//After removal, we can check the correctness of the remaining BST by checking the correctness
-//of the sorted array
-
-var result = outputSortedArr(testBST);
-
-console.log(result, testCorrect(result));
-
-
-
-
-
-
-
-
-
-
-
+	return depth;
+};
