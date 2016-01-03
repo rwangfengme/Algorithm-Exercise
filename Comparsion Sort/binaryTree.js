@@ -182,7 +182,7 @@ BinarySearchTree.prototype._remove = function(key, value, node){
 	}
 };
 
-// The order is Left / Node / Right
+// The order is Left / Node / Right, kind of depth first traversal
 BinarySearchTree.prototype._inorderTraversal = function(func, node){
 	var node = node || this.root;
 	if(!(node instanceof BstNode)){
@@ -304,7 +304,32 @@ BinarySearchTree.prototype._postorderTraversal = function(func, node){
 	}
 };
 
-//can simply done by traverse the whole tree
+// use queue
+BinarySearchTree.prototype._breadthFirstTravseal = function(func, node) {
+	var node = node || this.root;
+	if(!(node instanceof BstNode)){
+		throw "invalid node";
+	}
+
+	var queue = [];
+	queue.unshift(node);
+	while(node){
+		node = queue.shift();
+		if(!node){
+			return;
+		}
+		func(node);
+		if(node.left){
+			queue.unshift(node.left);
+		}
+		if(node.right){
+			queue.unshift(node.right);
+		}
+	}
+};
+
+
+//can simply done by traverse the whole tree if you record the depth when you insert each Node
 BinarySearchTree.prototype._getDepth = function(){
 	var depth = 0;
 	this._inorderTraversal(function(node){
@@ -314,4 +339,18 @@ BinarySearchTree.prototype._getDepth = function(){
 	});
 
 	return depth;
+};
+
+//this can get depth even you didn't record it
+BinarySearchTree.prototype._getDepth_R = function(node){
+	var node = node || this.root;
+	if(!node){
+		return 0;
+	}
+
+	var leftHeight = this._getDepth_R(node.left);
+	var rightHeight = this._getDepth_R(node.right);
+
+	return Math.max(leftHeight, rightHeight) + 1
+
 };

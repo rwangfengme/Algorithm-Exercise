@@ -25,22 +25,17 @@ function testCorrect(arr){
 };
 
 
-/****************** sorting test **********************
- By using Binary Search Tree, we can easily get an sorted arr from the input.
-just built a BST and then do inorder travel, here's an example
-*/
-initialArr();
+function convertArrToBST(arr, BST){
+	for(var i = 0; i<arr.length; i++){
+		BST._add(arr[i], i);
+	}
+};
 
-var BST = new BinarySearchTree();
-for(var i = 0; i<arrLen; i++){
-	BST._add(arr[i], i);
-}
-
-function outputSortedArr(BST){
+function outputTraversalArr(BST, orderFunc){
 	var orderedElements = [];
-	BST._inorderTraversal(function(node){
+	orderFunc.call(BST, (function(node){
 		orderedElements.push(node);
-	});
+	}));
 	var sortedArr = [];
 
 	for(var j = 0; j < orderedElements.length; j++){
@@ -48,11 +43,19 @@ function outputSortedArr(BST){
 			sortedArr.push(orderedElements[j].key);
 		}
 	}
-
 	return sortedArr;
-}
+};
 
-var result = outputSortedArr(BST);
+/****************** sorting test **********************
+ By using Binary Search Tree, we can easily get an sorted arr from the input.
+just built a BST and then do inorder travel, here's an example
+*/
+initialArr();
+
+var BST = new BinarySearchTree();
+convertArrToBST(arr, BST);
+
+var result = outputTraversalArr(BST, BST._inorderTraversal);
 console.log("BinarySearchTree Sort", testCorrect(result), result);
 
 
@@ -62,19 +65,10 @@ console.log("BinarySearchTree Sort", testCorrect(result), result);
 var preorderArr = [40, 25, 78, 10, 32, 7, 31, 35];
 var preorderBST = new BinarySearchTree();
 
-for(var i = 0; i<preorderArr.length; i++){
-	preorderBST._add(preorderArr[i], i);
-}
+convertArrToBST(preorderArr, preorderBST);
 
-var preorderElements = [];
-preorderBST._preorderTraversal(function(node){
-	preorderElements.push(node);
-});
+var result = outputTraversalArr(preorderBST, preorderBST._preorderTraversal);
 
-var result = [];
-for(var j in preorderElements){
-	result.push(preorderElements[j].key);
-}
 console.log(result);
 console.log(preorderBST._getDepth());
 
@@ -86,22 +80,25 @@ console.log(preorderBST._getDepth());
 var postorderArr = [40, 25, 78, 10, 32, 7, 31, 35];
 var postorderBST = new BinarySearchTree();
 
-for(var i = 0; i<postorderArr.length; i++){
-	postorderBST._add(postorderArr[i], i);
-}
+convertArrToBST(postorderArr, postorderBST);
 
-var postorderElements = [];
-postorderBST._postorderTraversal(function(node){
-	postorderElements.push(node);
-});
+var result = outputTraversalArr(postorderBST, postorderBST._postorderTraversal);
 
-var result = [];
-for(var j in postorderElements){
-	result.push(postorderElements[j].key);
-}
 console.log(result);
 
 
+
+/****************** breadth first traversal test *************
+7, 10 ,31, 35, 32, 25, 78, 40 is the right order
+*/
+var bfsArr = [40, 25, 78, 10, 32, 7, 31, 35];
+var bfsBST = new BinarySearchTree();
+
+convertArrToBST(bfsArr, bfsBST);
+
+var result = outputTraversalArr(bfsBST, bfsBST._breadthFirstTravseal);
+
+console.log(result);
 
 /****************** remove test **********************
 _remove(key, value, node)
@@ -116,16 +113,15 @@ var toRemoveValue;
 
 var testBST = new BinarySearchTree();
 var testArr = [15,11,17,8,12,16,18,7,10,13,9,8];
-for(var i = 0; i<testArr.length; i++){
-	testBST._add(testArr[i], i);
-}
+
+convertArrToBST(testArr, testBST);
 
 testBST._remove(toRemove, toRemoveValue);
 
 //After removal, we can check the correctness of the remaining BST by checking the correctness
 //of the sorted array
 
-var result = outputSortedArr(testBST);
+var result = outputTraversalArr(testBST, testBST._inorderTraversal);
 
 console.log(result, testCorrect(result));
 
