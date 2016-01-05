@@ -158,6 +158,7 @@ BinarySearchTree.prototype._remove = function(key, value, node){
 	
 	if(node.valueList.length > 1){
 		var index = node.valueList.indexOf(value);
+		// In case of wrong value provided
 		node.valueList.splice(index ? index : 0, 1);
 		return;
 	}else if(node.left && node.right){
